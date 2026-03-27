@@ -13,6 +13,24 @@ Syntax highlighting support for the [MLscript][mlscript] programming language.
 
 This extension does not have settings currently.
 
+## Automated Publishing
+
+This repository includes [`.github/workflows/publish.yml`](.github/workflows/publish.yml).
+On pushes to `main`, the workflow compares the current `package.json` version to
+the previous commit. If the version changed, it builds the extension, packages a
+`.vsix`, uploads that file as a workflow artifact, and publishes it to the VS
+Code Marketplace.
+
+To enable publishing:
+
+1. Make sure the `publisher` field in [`package.json`](package.json) matches
+   your Visual Studio Marketplace publisher ID.
+2. Create an Azure DevOps Personal Access Token with Marketplace `Manage` scope.
+3. Add that token to GitHub Actions as a repository or environment secret named
+   `VSCE_PAT`.
+4. Push a commit to `main` that updates the extension version in
+   [`package.json`](package.json).
+
 ## Known Issues
 
 - Some token scopes might be wrong.

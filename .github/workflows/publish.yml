@@ -1,0 +1,106 @@
+name: Publish VS Code Extension
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - package.json
+      - package-lock.json
+      - .vscodeignore
+      - .github/workflows/publish.yml
+
+concurrency:
+  group: publish-vscode-extension
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Detect version bump
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          current="$(node -p "require('./package.json').version")"
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+          echo "vsix=mlscript-syntax-highlight-$current.vsix" >> "$GITHUB_OUTPUT"
+
+          before="${{ github.event.before }}"
+          if [ "$before" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$before:package.json" 2>/dev/null; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Detected version for initial publish: $current"
+            exit 0
+          fi
+
+          previous="$(git show "$before:package.json" | node -e "let data = ''; process.stdin.on('data', chunk => data += chunk); process.stdin.on('end', () => console.log(JSON.parse(data).version));")"
+          echo "previous=$previous" >> "$GITHUB_OUTPUT"
+
+          if [ "$previous" = "$current" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "package.json version unchanged at $current; skipping publish."
+            exit 0
+          fi
+
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "Detected version bump: $previous -> $current"
+
+      - name: Stop when version is unchanged
+        if: steps.version.outputs.changed != 'true'
+        run: echo "No extension publish is required for this push."
+
+      - name: Ensure Marketplace token is configured
+        if: steps.version.outputs.changed == 'true'
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          if [ -z "$VSCE_PAT" ]; then
+            echo "::error::Missing VSCE_PAT secret."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        if: steps.version.outputs.changed == 'true'
+        run: npm ci
+
+      - name: Build grammar
+        if: steps.version.outputs.changed == 'true'
+        run: npm run build
+
+      - name: Build extension bundle
+        if: steps.version.outputs.changed == 'true'
+        run: npm --workspace packages/extension run build
+
+      - name: Package VSIX
+        if: steps.version.outputs.changed == 'true'
+        run: npx @vscode/vsce@3.7.1 package --out "${{ steps.version.outputs.vsix }}"
+
+      - name: Upload VSIX artifact
+        if: steps.version.outputs.changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.version.outputs.vsix }}
+          path: ${{ steps.version.outputs.vsix }}
+          if-no-files-found: error
+
+      - name: Publish to Visual Studio Marketplace
+        if: steps.version.outputs.changed == 'true'
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: npx @vscode/vsce@3.7.1 publish --packagePath "${{ steps.version.outputs.vsix }}" --skip-duplicate
