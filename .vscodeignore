@@ -5,3 +5,9 @@ vsc-extension-quickstart.md
 packages/**
 node_modules/**
 **/*.js.map
+main.mjs
+test.mjs
+repro/**
+syntaxes/*.yaml
+*.vsix
+**/.DS_Store
