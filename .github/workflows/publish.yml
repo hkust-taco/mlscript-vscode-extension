@@ -32,6 +32,13 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: sbt
+
       - name: Detect version bump
         id: version
         shell: bash
@@ -82,6 +89,11 @@ jobs:
       - name: Build grammar
         if: steps.version.outputs.changed == 'true'
         run: npm run build
+
+      - name: Build ported Scala.js bundle
+        if: steps.version.outputs.changed == 'true'
+        working-directory: packages/extension/ported
+        run: sbt --batch fullLinkJS
 
       - name: Build extension bundle
         if: steps.version.outputs.changed == 'true'
