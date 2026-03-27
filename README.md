@@ -38,6 +38,27 @@ To enable publishing:
 
 ## Release Notes
 
+### 0.0.9
+
+#### Features
+
+- Highlight MLscript source files ending with `.wit` in the same way as `.mls`.
+- Highlight `with` as a keyword anywhere it appears, not just at the end of a line.
+
+### 0.0.8
+
+#### Features
+
+- Add a document symbol provider for the VS Code outline view.
+- Improve keyword and declaration handling used by the extension parser and symbols.
+
+### 0.0.7
+
+#### Features
+
+- Support `open` statements.
+- Highlight more MLscript keywords.
+
 ### 0.0.6
 
 #### Features
