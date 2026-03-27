@@ -6,4 +6,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
-- Initial release
+### Features
+
+- Support `.wit` files with the same language configuration and syntax highlighting as `.mls` files.
+- Highlight `with` as a keyword anywhere it appears, not just at the end of a line.

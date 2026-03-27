@@ -4,7 +4,7 @@ Syntax highlighting support for the [MLscript][mlscript] programming language.
 
 ## Features
 
-- Highlight MLscript source files (ending with `.mls`).
+- Highlight MLscript source files (ending with `.mls` or `.wit`).
 - Highlight most keywords and identifiers.
 - Highlight comments created by `DiffTests`.
 - This is _not_ a language server.

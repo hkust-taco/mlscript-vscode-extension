@@ -52,7 +52,7 @@ repository:
   keywords:
     patterns:
     - name: keyword.control.with.mlscript
-      match: "\\b(with)\\s+$"
+      match: "\\b(with)\\b"
     - name: keyword.structure.mlscript
       match: "\\b(type)\\b"
     - name: keyword.control.mlscript

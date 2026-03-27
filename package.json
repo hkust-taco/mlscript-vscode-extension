@@ -28,7 +28,8 @@
           "mlscript"
         ],
         "extensions": [
-          ".mls"
+          ".mls",
+          ".wit"
         ],
         "configuration": "./language-configuration.json"
       }
